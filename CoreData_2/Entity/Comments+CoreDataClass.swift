@@ -14,7 +14,7 @@ public class Comments: NSManagedObject {
     
     //вспомогателный инциализатор
     convenience init() {
-        self.init(entity: CoreDataManager.instance.entityForName(entityName: "Person"), insertInto: CoreDataManager.instance.context)
+        self.init(entity: CoreDataManager.instance.entityForName(entityName: "Comments"), insertInto: CoreDataManager.instance.context)
     }
 
 }

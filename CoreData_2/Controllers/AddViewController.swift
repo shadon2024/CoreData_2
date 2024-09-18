@@ -34,10 +34,10 @@ class AddViewController: UIViewController {
     @IBOutlet weak var nameTexxtField: UITextField!
     @IBOutlet weak var ageTexxtField: UITextField!
     
-    @IBOutlet weak var department: UITextField! {
+    @IBOutlet weak var departmentTextFild: UITextField! {
         didSet {
-            department.inputView = UIView(frame: .zero)
-            department.addTarget(self, action: #selector(editingDep), for: .editingDidBegin)
+            departmentTextFild.inputView = UIView(frame: .zero)
+            departmentTextFild.addTarget(self, action: #selector(editingDep), for: .editingDidBegin)
         }
     }
     
@@ -47,77 +47,7 @@ class AddViewController: UIViewController {
     @IBOutlet weak var commentTextField: UITextField!
     
 
-    var options: [String] = []
 
-
-    func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool {
-        showSelectionAlert()
-        return false // Отключает стандартное поведение текстового поля (открытие клавиатуры)
-    }
-
-    func showSelectionAlert() {
-        let alertController = UIAlertController(title: "Выберите опцию", message: nil, preferredStyle: .actionSheet)
-
-        // Используем опции, загруженные из Core Data
-        for option in options {
-            let action = UIAlertAction(title: option, style: .default) { [weak self] _ in
-                self?.department.text = option
-            }
-            alertController.addAction(action)
-
-        }
-
-        let cancelAction = UIAlertAction(title: "Отмена", style: .cancel, handler: nil)
-        alertController.addAction(cancelAction)
-
-        present(alertController, animated: true, completion: nil)
-    }
-
-    // Метод для загрузки данных из Core Data
-        func loadOptionsFromCoreData() {
-            guard UIApplication.shared.delegate is CoreDataManager else { return }
-
-            let managedContext = CoreDataManager.instance.persistentContainer.viewContext
-            let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: "Departament")
-
-            do {
-                let fetchedOptions = try managedContext.fetch(fetchRequest)
-                options = fetchedOptions.compactMap { $0.value(forKey: "nameDep") as? String }
-                
-                // Выводим массив для отладки
-                        print("Загруженные департаменты: \(options)")
-                        
-                        // Если опции пусты, покажем сообщение для отладки
-                        if options.isEmpty {
-                            print("Нет данных в Core Data")
-                        }
-            } catch let error as NSError {
-                print("Could not fetch. \(error), \(error.userInfo)")
-            }
-        }
-    
-    func deleteAllData(entity: String) {
-        let managedContext = CoreDataManager.instance.persistentContainer.viewContext
-        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: entity)
-        let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
-        
-        do {
-            try managedContext.execute(deleteRequest)
-            print("\(entity) сущность успешно удалена.")
-        } catch let error as NSError {
-            print("Ошибка при удалении данных: \(error), \(error.userInfo)")
-        }
-    }
-    
-    
-//    @IBOutlet weak var department: UITextField! {
-//        didSet {
-//            department.inputView = UIView(frame: .zero)
-//            department.addTarget(self, action: #selector(editingDep), for: .editingDidBegin)
-//        }
-//    }
-//
-//
     @objc func editingDep() {
         let alert = UIAlertController(title: "Выберите отдел ", message: nil, preferredStyle: .actionSheet)
         let numberDepartament = fetchResultController.sections![0].numberOfObjects
@@ -127,43 +57,45 @@ class AddViewController: UIViewController {
                 let departament = fetchResultController.object(at: [0, item]) as! Departament
                 alert.addAction(UIAlertAction(title: departament.nameDep, style: .default, handler: { [unowned self] _ in
                     self.textDep = departament.nameDep!
-                    department.resignFirstResponder()
+                    //departmentTextFild.resignFirstResponder()
 
                 }))
             }
         } else {
             alert.addAction(UIAlertAction(title: "?", style: .default, handler: { [unowned self] _ in
                 self.textDep = ""
-                department.resignFirstResponder()
+                departmentTextFild.resignFirstResponder()
             }))
-
-            alert.addAction(UIAlertAction(title: "Отмена", style: .cancel, handler: { [unowned self] _ in
-                department.resignFirstResponder()
-            }))
-            present(alert, animated: true, completion: nil)
         }
+        
+        alert.addAction(UIAlertAction(title: "Отмена", style: .cancel, handler: { [unowned self] _ in
+            departmentTextFild.resignFirstResponder()
+        }))
+        
+        present(alert, animated: true, completion: nil)
     }
     
     // Наблюдатель
     var textDep: String? {
         didSet {
-            department.text = textDep
+            departmentTextFild.text = textDep
         }
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        department.delegate = self
+        departmentTextFild.delegate = self
         //deleteAllData(entity: Constans.entity)
-        loadOptionsFromCoreData()
+        //loadOptionsFromCoreData()
         //seedDataIfNeeded()
         
         // Чтение объекта
         if let person = person {
             nameTexxtField.text = person.name
             ageTexxtField.text = String(person.age)
-            department.text = person.departament
+            departmentTextFild.text = person.departament
+            commentTextField.text = person.person?.comments
         }
         
         // Загрузить данные в Controller
@@ -194,7 +126,13 @@ class AddViewController: UIViewController {
         if let person = person {
             person.name = nameTexxtField.text
             person.age = Int16(ageTexxtField.text!)!
-            person.departament = department.text
+            person.departament = departmentTextFild.text
+            
+            let comment = Comments()
+            comment.comments = commentTextField.text
+            
+            person.person = comment
+            
             CoreDataManager.instance.saveContext()
             
         }
@@ -216,3 +154,78 @@ class AddViewController: UIViewController {
 extension AddViewController: UITextFieldDelegate {
     
 }
+
+
+
+
+//    var options: [String] = []
+
+
+//    func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool {
+//        //showSelectionAlert()
+//        return true // Отключает стандартное поведение текстового поля (открытие клавиатуры)
+//    }
+//
+//    func showSelectionAlert() {
+//        let alertController = UIAlertController(title: "Выберите опцию", message: nil, preferredStyle: .actionSheet)
+//
+//        // Используем опции, загруженные из Core Data
+//        for option in options {
+//            let action = UIAlertAction(title: option, style: .default) { [weak self] _ in
+//                self?.department.text = option
+//            }
+//            alertController.addAction(action)
+//
+//        }
+//
+//        let cancelAction = UIAlertAction(title: "Отмена", style: .cancel, handler: nil)
+//        alertController.addAction(cancelAction)
+//
+//        present(alertController, animated: true, completion: nil)
+//    }
+
+    // Метод для загрузки данных из Core Data
+//        func loadOptionsFromCoreData() {
+//            guard UIApplication.shared.delegate is CoreDataManager else { return }
+//
+//            let managedContext = CoreDataManager.instance.persistentContainer.viewContext
+//            let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: "Departament")
+//
+//            do {
+//                let fetchedOptions = try managedContext.fetch(fetchRequest)
+//                options = fetchedOptions.compactMap { $0.value(forKey: "nameDep") as? String }
+//
+//                // Выводим массив для отладки
+//                        print("Загруженные департаменты: \(options)")
+//
+//                        // Если опции пусты, покажем сообщение для отладки
+//                        if options.isEmpty {
+//                            print("Нет данных в Core Data")
+//                        }
+//            } catch let error as NSError {
+//                print("Could not fetch. \(error), \(error.userInfo)")
+//            }
+//        }
+//
+//    func deleteAllData(entity: String) {
+//        let managedContext = CoreDataManager.instance.persistentContainer.viewContext
+//        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: entity)
+//        let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
+//
+//        do {
+//            try managedContext.execute(deleteRequest)
+//            print("\(entity) сущность успешно удалена.")
+//        } catch let error as NSError {
+//            print("Ошибка при удалении данных: \(error), \(error.userInfo)")
+//        }
+//    }
+    
+    
+//    @IBOutlet weak var department: UITextField! {
+//        didSet {
+//            department.inputView = UIView(frame: .zero)
+//            department.addTarget(self, action: #selector(editingDep), for: .editingDidBegin)
+//        }
+//    }
+//
+//

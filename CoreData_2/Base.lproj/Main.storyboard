@@ -268,7 +268,7 @@
                     <connections>
                         <outlet property="ageTexxtField" destination="gqv-D9-hmI" id="3NK-dT-Hve"/>
                         <outlet property="commentTextField" destination="X7t-24-Cse" id="Ob2-Mc-Rhf"/>
-                        <outlet property="department" destination="l34-sf-Fe8" id="R3j-9W-CQe"/>
+                        <outlet property="departmentTextFild" destination="l34-sf-Fe8" id="R3j-9W-CQe"/>
                         <outlet property="nameTexxtField" destination="1Gf-Qk-TJW" id="Pv3-Am-1l3"/>
                     </connections>
                 </viewController>
